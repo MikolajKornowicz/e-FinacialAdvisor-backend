@@ -2,13 +2,14 @@ package com.efinancialadvisor.service;
 
 import com.efinancialadvisor.controller.BudgetNotFoundException;
 import com.efinancialadvisor.domain.Budget;
+import com.efinancialadvisor.domain.UserDto;
+import com.efinancialadvisor.mapper.BudgetMapper;
 import com.efinancialadvisor.repository.BudgetRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -16,13 +17,14 @@ import java.util.Optional;
 public class DbService {
 
     private final BudgetRepository repository;
+    private final BudgetMapper mapper;
 
 
-    public List<Budget> getAllBudgets () {
+    public List<Budget> getAllBudgets() {
         return repository.findAll();
     }
 
-    public Budget saveBudget (final  Budget  budget){
+    public Budget saveBudget(final Budget budget) {
         return repository.save(budget);
     }
 
@@ -30,8 +32,16 @@ public class DbService {
         return repository.findByUserId(userId).orElseThrow(BudgetNotFoundException::new);
     }
 
-    public void deleteBudgetByUserId (final Long userId) {
+    public void deleteBudgetByUserId(final Long userId) {
         repository.deleteBudgetByUserId(userId);
     }
 
+    public Optional<UserDto> getByUserName(final String username) {
+        try {
+            Optional<UserDto> userDto = Optional.ofNullable(mapper.mapBudgetToUserDto(repository.findByUsername(username)));
+                return userDto;
+    } catch (NoSuchElementException e){
+        return Optional.empty();
+        }
+    }
 }

@@ -2,30 +2,31 @@ package com.efinancialadvisor.domain;
 
 import com.efinancialadvisor.controller.BudgetNotFoundException;
 import com.efinancialadvisor.service.DbService;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 
 @Service
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Getter
 public class BudgetCalculator {
 
     private BudgetDto budget;
-    private DbService service;
+    private final DbService service;
 
-    public BigDecimal calculateExpenses (Long userId) throws BudgetNotFoundException {
+    public int calculateExpenses (Long userId) throws BudgetNotFoundException {
 
-        BigDecimal total = BigDecimal.ZERO;
-        List<BigDecimal> listExpenses = new ArrayList<>();
+        int total = 0;
+        List<Integer> listExpenses = new ArrayList<>();
+
         listExpenses.add(service.getBudget(userId).getRent());
         listExpenses.add(service.getBudget(userId).getUtilities());
         listExpenses.add(service.getBudget(userId).getPhone());
@@ -45,9 +46,13 @@ public class BudgetCalculator {
         listExpenses.add(service.getBudget(userId).getLoans());
         listExpenses.add(service.getBudget(userId).getOther());
 
-        for (BigDecimal amount : listExpenses){
-            total = total.add(amount);
+        for (int amount : listExpenses){
+            total = total + (amount);
         }
         return total;
+    }
+
+    public int calculateNetIncome (long userId) throws BudgetNotFoundException {
+        return service.getBudget(userId).getIncome()-(calculateExpenses(userId));
     }
 }
