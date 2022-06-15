@@ -22,6 +22,7 @@ public class Budget {
 
     @Id
     @GeneratedValue
+    @Column(name = "user_id")
     private Long userId;
     @Column(name = "income", nullable = false, columnDefinition = "int default 0 not null")
     private int income;
@@ -76,7 +77,6 @@ public class Budget {
     @Column(name = "surname")
     private String surname;
 
-    public Budget(Optional<Budget> byUsername) {
-    }
+
 }
 

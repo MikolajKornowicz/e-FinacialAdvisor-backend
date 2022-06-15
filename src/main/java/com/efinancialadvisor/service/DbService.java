@@ -44,4 +44,8 @@ public class DbService {
         return Optional.empty();
         }
     }
+
+    public Budget getBudgetByUsername (final String username) throws BudgetNotFoundException{
+        return repository.findByUsername(username).orElseThrow(BudgetNotFoundException::new);
+    }
 }

@@ -22,5 +22,4 @@ public interface BudgetRepository extends CrudRepository<Budget, Long> {
 
     Optional<Budget> findByUsername (String username);
 
-
 }

@@ -44,8 +44,8 @@ public class EfaController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/budget/expenses/{userId}")
-    public BigDecimal getExpenses (@PathVariable Long userId) throws BudgetNotFoundException {
-        return new BigDecimal(String.valueOf(budgetCalculator.calculateExpenses(userId)));
+    public String getExpenses (@PathVariable Long userId) throws BudgetNotFoundException {
+        return String.valueOf(budgetCalculator.calculateExpenses(userId));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/budget/rent/{userId}")
@@ -54,8 +54,8 @@ public class EfaController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/budget/netincome/{userId}")
-    public BigDecimal getNetIncome (@PathVariable Long userId) throws BudgetNotFoundException {
-        return new BigDecimal(String.valueOf(budgetCalculator.calculateNetIncome(userId)));
+    public String getNetIncome (@PathVariable Long userId) throws BudgetNotFoundException {
+        return String.valueOf(budgetCalculator.calculateNetIncome(userId));
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/budget/{userId}")
@@ -67,19 +67,31 @@ public class EfaController {
     public BudgetDto updateBudget(@RequestBody BudgetDto budgetDto){
         return budgetMapper.mapToBudgetDto(service.saveBudget(budgetMapper.mapToBudget(budgetDto)));
     }
-    @RequestMapping(method = RequestMethod.POST, value = "/budget", consumes = MediaType.APPLICATION_JSON_VALUE)
-        public void createBudget(@RequestBody CreatedBudgetDto createdBudgetDto){
+    @RequestMapping(method = RequestMethod.PUT, value = "/budget", consumes = MediaType.APPLICATION_JSON_VALUE)
+        public void updateBudget(@RequestBody CreatedBudgetDto createdBudgetDto){
         Budget budget = budgetMapper.mapCreatedIntoBudget(createdBudgetDto);
         service.saveBudget(budget);
         }
 
     @RequestMapping(method = RequestMethod.POST, value = "/budget/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public boolean getCredentials (@RequestBody UserDto user) {
+    public UserDto getCredentials (@RequestBody UserDto user) {
         try{
-            return authenticator.authenticate(user.getUsername(), user.getPassword());
+            boolean result = authenticator.authenticate(user.getUsername(), user.getPassword());
+            if (result){
+                UserDto authenticatedUser = new UserDto(user.getUserId(), user.getUsername(), user.getPassword());
+                return authenticatedUser;
+            } else {
+                return new UserDto(0L, "UnknownUser", "UnknownUser");
+            }
     } catch (Exception e){
             System.out.println("Exception:" + e.getMessage());
-        return false;
+        return new UserDto(0L, "UnknownUser", "UnknownUser");
         }
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/budget/user/{username}")
+    public ResponseEntity<BudgetDto> getBudgetByUsername (@PathVariable String username) throws BudgetNotFoundException {
+        return new ResponseEntity<>(budgetMapper.mapToBudgetDto(
+                service.getBudgetByUsername(username)), HttpStatus.OK);
     }
 }

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 @Service
 public class BudgetMapper {
 
+
     public BudgetDto mapToBudgetDto (Budget budget){
         return new BudgetDto(
                 budget.getUserId(),
@@ -114,6 +115,7 @@ public class BudgetMapper {
 
     public UserDto mapBudgetToUserDto(Optional<Budget> budget){
         return new UserDto(
+                budget.get().getUserId(),
                 budget.get().getUsername(),
                 budget.get().getPassword()
         );

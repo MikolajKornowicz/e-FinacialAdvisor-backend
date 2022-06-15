@@ -9,6 +9,8 @@ import lombok.*;
 @Setter
 public class UserDto {
 
+    @JsonProperty("userId")
+    private Long userId;
     @JsonProperty("username")
     private String username;
     @JsonProperty("password")
