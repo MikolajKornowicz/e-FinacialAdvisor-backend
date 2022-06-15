@@ -19,7 +19,6 @@ import java.util.List;
 @Getter
 public class BudgetCalculator {
 
-    private BudgetDto budget;
     private final DbService service;
 
     public int calculateExpenses (Long userId) throws BudgetNotFoundException {
@@ -53,6 +52,10 @@ public class BudgetCalculator {
     }
 
     public int calculateNetIncome (long userId) throws BudgetNotFoundException {
-        return service.getBudget(userId).getIncome()-(calculateExpenses(userId));
+        int income = service.getBudget(userId).getIncome();
+        int expenses = service.getBudget(userId).getExpenses();
+        int net = income - expenses;
+
+        return net;
     }
 }

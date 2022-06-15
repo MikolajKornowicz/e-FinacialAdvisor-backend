@@ -4,6 +4,7 @@ import com.efinancialadvisor.domain.*;
 import com.efinancialadvisor.mapper.BudgetMapper;
 import com.efinancialadvisor.service.DbService;
 import com.efinancialadvisor.service.LoginAuthenticator;
+import com.efinancialadvisor.service.NewAccountValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -30,6 +31,7 @@ public class EfaController {
     private final BudgetMapper budgetMapper;
     private final BudgetCalculator budgetCalculator;
     private final LoginAuthenticator authenticator;
+    private final NewAccountValidator validator;
 
     @RequestMapping(method = RequestMethod.GET, value = "budget")
     public List<BudgetDto> getAllBudgets () {
@@ -45,6 +47,9 @@ public class EfaController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/budget/expenses/{userId}")
     public String getExpenses (@PathVariable Long userId) throws BudgetNotFoundException {
+        BudgetDto budget = budgetMapper.mapToBudgetDto(service.getBudget(userId));
+        budget.setExpenses(budgetCalculator.calculateExpenses(userId));
+        service.saveBudget(budgetMapper.mapToBudget(budget));
         return String.valueOf(budgetCalculator.calculateExpenses(userId));
     }
 
@@ -55,18 +60,19 @@ public class EfaController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/budget/netincome/{userId}")
     public String getNetIncome (@PathVariable Long userId) throws BudgetNotFoundException {
+        BudgetDto budget = budgetMapper.mapToBudgetDto(service.getBudget(userId));
+        budget.setNetIncome(budgetCalculator.calculateNetIncome(userId));
+        service.saveBudget(budgetMapper.mapToBudget(budget));
         return String.valueOf(budgetCalculator.calculateNetIncome(userId));
+
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/budget/{userId}")
-    public void deleteBudget (Long userId) {
+    public void deleteBudget (@PathVariable Long userId) {
                 service.deleteBudgetByUserId(userId);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/budget")
-    public BudgetDto updateBudget(@RequestBody BudgetDto budgetDto){
-        return budgetMapper.mapToBudgetDto(service.saveBudget(budgetMapper.mapToBudget(budgetDto)));
-    }
+
     @RequestMapping(method = RequestMethod.PUT, value = "/budget", consumes = MediaType.APPLICATION_JSON_VALUE)
         public void updateBudget(@RequestBody CreatedBudgetDto createdBudgetDto){
         Budget budget = budgetMapper.mapCreatedIntoBudget(createdBudgetDto);
@@ -93,5 +99,10 @@ public class EfaController {
     public ResponseEntity<BudgetDto> getBudgetByUsername (@PathVariable String username) throws BudgetNotFoundException {
         return new ResponseEntity<>(budgetMapper.mapToBudgetDto(
                 service.getBudgetByUsername(username)), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/budget/new",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void createNewAccount (@RequestBody BudgetDto budgetDto) {
+        service.saveBudget(budgetMapper.mapToBudget(budgetDto));
     }
 }
